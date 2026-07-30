@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baraka Plaza – Maintenance Requests</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --hot-pink: #FF4F81;
+    --hot-pink-deep: #E8306A;
+    --pink-light: #FFE1EC;
+    --pink-pale: #FFF3F7;
+    --cream: #FFFBF6;
+    --plum-ink: #2B1830;
+    --plum-soft: #6E5A72;
+    --sunshine: #FFC145;
+    --mint: #2FBF8F;
+    --coral: #FF6B4A;
+    --sky: #4FA8E8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--plum-ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(60px);
+    z-index: 0;
+    animation: float 12s ease-in-out infinite;
+  }
+  .blob1 { width: 300px; height: 300px; background: var(--sky); top: -120px; left: -100px; animation-delay: 0s; opacity: 0.22; }
+  .blob2 { width: 280px; height: 280px; background: var(--sunshine); bottom: -100px; right: -80px; animation-delay: -4s; opacity: 0.22; }
+  .blob3 { width: 220px; height: 220px; background: var(--mint); top: 40%; right: -60px; animation-delay: -8s; opacity: 0.18; }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(20px, -30px) scale(1.06); }
+    66% { transform: translate(-15px, 20px) scale(0.96); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob { animation: none; }
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 40px 20px 100px;
+    position: relative;
+    z-index: 1;
+  }
+
+  h1, h2 { font-family: 'Baloo 2', sans-serif; font-weight: 700; }
+
+  em { font-style: normal; color: var(--hot-pink-deep); }
+
+  .fade-up { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .d1 { animation-delay: 0.05s; }
+  .d2 { animation-delay: 0.15s; }
+
+  /* ---------- GATE ---------- */
+  #gate {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .gate-card {
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    border-radius: 28px;
+    padding: 40px 32px;
+    box-shadow: 0 20px 60px rgba(232, 48, 106, 0.18), 0 4px 12px rgba(43,24,48,0.06);
+    text-align: center;
+  }
+
+  .gate-emoji {
+    font-size: 44px;
+    margin-bottom: 12px;
+    display: inline-block;
+    animation: wiggle 3s ease-in-out infinite;
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    10% { transform: rotate(-8deg); }
+    20% { transform: rotate(8deg); }
+    30% { transform: rotate(-4deg); }
+    40% { transform: rotate(0deg); }
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--hot-pink-deep);
+    margin-bottom: 8px;
+  }
+
+  h1 { font-size: 30px; line-height: 1.15; margin-bottom: 10px; }
+
+  .sub { color: var(--plum-soft); font-size: 15px; margin-bottom: 26px; line-height: 1.5; }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--plum-soft);
+    margin-bottom: 8px;
+    text-align: left;
+  }
+
+  input[type="text"], input[type="email"], input[type="tel"], textarea {
+    width: 100%;
+    background: #FAF8F5;
+    border: 2px solid #ECE7E2;
+    border-radius: 14px;
+    color: var(--plum-ink);
+    padding: 13px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus, textarea:focus {
+    border-color: var(--sky);
+    background: white;
+  }
+
+  #accessCode { text-align: center; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 16px; }
+
+  button {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    border-radius: 14px;
+    padding: 15px 22px;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--hot-pink), var(--hot-pink-deep));
+    color: white;
+    width: 100%;
+    box-shadow: 0 10px 24px rgba(232, 48, 106, 0.35);
+  }
+  .btn-primary:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 14px 30px rgba(232, 48, 106, 0.42); }
+  .btn-primary:active { transform: translateY(0) scale(0.99); }
+  .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .gate-error {
+    color: var(--coral);
+    font-weight: 600;
+    font-size: 13px;
+    margin-top: 12px;
+    min-height: 16px;
+  }
+  .gate-error.shake { animation: shake 0.4s; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+
+  .footnote { font-size: 13px; color: var(--plum-soft); margin-top: 22px; text-align: center; }
+
+  /* ---------- WHATSAPP FAB ---------- */
+  .whatsapp-fab {
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    background: linear-gradient(135deg, var(--hot-pink), var(--hot-pink-deep));
+    color: white;
+    border-radius: 999px;
+    padding: 13px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    box-shadow: 0 10px 24px rgba(232, 48, 106, 0.4);
+    z-index: 50;
+    transition: transform 0.15s;
+  }
+  .whatsapp-fab:hover { transform: translateY(-2px) scale(1.03); }
+
+  /* ---------- MAIN FORM ---------- */
+  #app { display: none; }
+
+  .hero-card {
+    background: linear-gradient(135deg, var(--hot-pink), var(--hot-pink-deep));
+    border-radius: 28px;
+    padding: 32px 28px;
+    color: white;
+    margin-bottom: 24px;
+    box-shadow: 0 16px 40px rgba(232, 48, 106, 0.28);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-card::after {
+    content: '🔧';
+    position: absolute;
+    font-size: 120px;
+    opacity: 0.15;
+    right: -20px;
+    bottom: -30px;
+    transform: rotate(-15deg);
+  }
+  .hero-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; margin-bottom: 8px; }
+  .hero-card h1 { font-size: 28px; color: white; margin-bottom: 8px; }
+  .hero-card .sub { color: rgba(255,255,255,0.9); margin-bottom: 0; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 18px;
+    padding: 16px 10px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(43,24,48,0.06);
+    transition: transform 0.15s;
+  }
+  .stat-card:hover { transform: translateY(-3px); }
+  .stat-number { font-family: 'Baloo 2', sans-serif; font-size: 22px; font-weight: 800; }
+  .stat-label { font-size: 11px; color: var(--plum-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+
+  .form-card { background: white; border-radius: 28px; padding: 32px 28px; box-shadow: 0 16px 40px rgba(43,24,48,0.08); }
+
+  .field { margin-bottom: 22px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  @media (max-width: 480px) {
+    .field-row { grid-template-columns: 1fr; }
+    .stat-row { gap: 8px; }
+  }
+
+  @media (max-width: 360px) {
+    .wrap { padding: 28px 14px 90px; }
+    .gate-card { padding: 32px 22px; }
+    .hero-card { padding: 26px 20px; }
+    .hero-card h1 { font-size: 23px; }
+    .form-card { padding: 24px 18px; }
+    .stat-row { grid-template-columns: 1fr 1fr; }
+    .stat-row .stat-card:last-child { grid-column: span 2; }
+    .stat-card { padding: 12px 8px; }
+    .whatsapp-fab span.wa-text { display: none; }
+    .whatsapp-fab { padding: 13px; border-radius: 50%; }
+  }
+
+  textarea { resize: vertical; min-height: 90px; }
+
+  .tag-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .tag {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 16px;
+    border: 2px solid #ECE7E2;
+    border-radius: 999px;
+    color: var(--plum-soft);
+    cursor: pointer;
+    background: #FAF8F5;
+    transition: all 0.15s;
+  }
+  .tag:hover { border-color: var(--sky); color: var(--plum-ink); transform: translateY(-1px); }
+  .tag.selected {
+    background: linear-gradient(135deg, var(--hot-pink), var(--hot-pink-deep));
+    border-color: var(--hot-pink-deep);
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(232, 48, 106, 0.3);
+  }
+
+  .urgency-row { display: flex; gap: 8px; }
+  .urgency-row .tag { flex: 1; text-align: center; border-radius: 14px; }
+  .urgency-row .tag.selected.low { background: var(--mint); border-color: var(--mint); box-shadow: 0 6px 16px rgba(47,191,143,0.35); }
+  .urgency-row .tag.selected.medium { background: var(--sunshine); border-color: var(--sunshine); color: var(--plum-ink); box-shadow: 0 6px 16px rgba(255,193,69,0.35); }
+  .urgency-row .tag.selected.high { background: var(--coral); border-color: var(--coral); box-shadow: 0 6px 16px rgba(255,107,74,0.35); }
+
+  .hint { font-size: 12px; color: var(--plum-soft); margin-top: 6px; }
+
+  .submit-row { margin-top: 30px; }
+
+  .field-error { color: var(--coral); font-size: 12px; font-weight: 600; margin-top: 6px; display: none; }
+  .field-error.show { display: block; }
+  .field.invalid input, .field.invalid textarea { border-color: var(--coral) !important; background: #FFF1EE; }
+
+  /* ---------- CONFIRMATION TICKET ---------- */
+  #confirmation { display: none; }
+
+  .celebrate { text-align: center; margin-bottom: 16px; position: relative; }
+  .celebrate .big-check { font-size: 64px; display: inline-block; animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  @keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .confetti-dot { position: absolute; border-radius: 50%; opacity: 0.9; animation: confettiFall 1.4s ease-out forwards; }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(120px) rotate(360deg); opacity: 0; }
+  }
+
+  .ticket {
+    background: white;
+    border-radius: 24px;
+    padding: 28px;
+    position: relative;
+    box-shadow: 0 16px 40px rgba(43,24,48,0.08);
+    border: 2px dashed #ECE7E2;
+  }
+
+  .ticket-id-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--plum-soft); }
+  .ticket-id { font-family: 'Baloo 2', sans-serif; font-size: 30px; font-weight: 800; color: var(--hot-pink-deep); margin: 6px 0 4px; }
+
+  .ticket-row { display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid #ECE7E2; font-size: 14px; }
+  .ticket-row .k { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--plum-soft); }
+  .ticket-row .v { text-align: right; max-width: 60%; font-weight: 600; }
+
+  .new-request-btn { background: white; border: 2px solid #ECE7E2; color: var(--plum-ink); width: 100%; margin-top: 20px; }
+  .new-request-btn:hover { border-color: var(--sky); transform: translateY(-2px); }
+
+  .status-msg { font-weight: 600; font-size: 13px; text-align: center; margin-top: 14px; color: var(--coral); }
+</style>
+</head>
+<body>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="blob blob3"></div>
+
+<div id="gate">
+  <div class="gate-card fade-up">
+    <div class="gate-emoji">🏠</div>
+    <div class="eyebrow">Baraka Plaza · Residents Only</div>
+    <h1>Got a house <em>issue?</em></h1>
+    <p class="sub">Pop in your access code and let's get it sorted, fast.</p>
+    <label for="accessCode">Access code</label>
+    <input type="text" id="accessCode" placeholder="Enter code" autocomplete="off">
+    <button class="btn-primary" id="gateBtn">Let's go 🚀</button>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+  <p class="footnote">No code? Ask your caretaker for one.</p>
+</div>
+
+<div id="app">
+  <div class="wrap">
+    <div class="hero-card fade-up">
+      <div class="hero-eyebrow">Baraka Plaza · Work Order Intake</div>
+      <h1>Tell us what's <em style="color: #FFE1EC;">up</em> at your place</h1>
+      <p class="sub">Takes under a minute. You'll get an email confirming we've got it, and the caretaker is notified right away.</p>
+    </div>
+
+    <div class="stat-row fade-up d1">
+      <div class="stat-card">
+        <div class="stat-number" style="color: var(--sky);">24/7</div>
+        <div class="stat-label">Portal Access</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" style="color: var(--mint);">Instant</div>
+        <div class="stat-label">Email Sent</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" style="color: #E8A93A;">1 Tap</div>
+        <div class="stat-label">To Submit</div>
+      </div>
+    </div>
+
+    <div class="form-card fade-up d2">
+      <form id="complaintForm" novalidate>
+        <div class="field-row">
+          <div class="field" id="field-house">
+            <label for="houseNumber">House / Unit number</label>
+            <input type="text" id="houseNumber" placeholder="e.g. B-14">
+            <div class="field-error">Enter your house or unit number.</div>
+          </div>
+          <div class="field" id="field-name">
+            <label for="tenantName">Your name</label>
+            <input type="text" id="tenantName" placeholder="e.g. Jane Doe">
+            <div class="field-error">Enter your name.</div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field" id="field-email">
+            <label for="tenantEmail">Your email</label>
+            <input type="email" id="tenantEmail" placeholder="you@email.com">
+            <div class="field-error">Enter a valid email — we'll send your confirmation here.</div>
+          </div>
+          <div class="field">
+            <label for="phone">Phone (optional)</label>
+            <input type="tel" id="phone" placeholder="For the caretaker to call you">
+          </div>
+        </div>
+
+        <div class="field" id="field-category">
+          <label>Category</label>
+          <div class="tag-grid" id="categoryTags">
+            <button type="button" class="tag" data-value="Plumbing">💧 Plumbing</button>
+            <button type="button" class="tag" data-value="Electrical">⚡ Electrical</button>
+            <button type="button" class="tag" data-value="Structural">🧱 Structural</button>
+            <button type="button" class="tag" data-value="Appliance">🔌 Appliance</button>
+            <button type="button" class="tag" data-value="Pest Control">🐛 Pest Control</button>
+            <button type="button" class="tag" data-value="Security">🔒 Security</button>
+            <button type="button" class="tag" data-value="Other">✨ Other</button>
+          </div>
+          <div class="field-error">Choose a category.</div>
+        </div>
+
+        <div class="field" id="field-urgency">
+          <label>Urgency</label>
+          <div class="urgency-row" id="urgencyTags">
+            <button type="button" class="tag low" data-value="Low">😌 Low</button>
+            <button type="button" class="tag medium" data-value="Medium">😐 Medium</button>
+            <button type="button" class="tag high" data-value="High">🚨 High</button>
+          </div>
+          <div class="field-error">Choose an urgency level.</div>
+        </div>
+
+        <div class="field" id="field-description">
+          <label for="description">What's the problem?</label>
+          <textarea id="description" placeholder="Describe what's wrong, where, and since when."></textarea>
+          <div class="field-error">Describe the problem.</div>
+        </div>
+
+        <div class="field">
+          <label for="resolution">What would you like done? (optional)</label>
+          <textarea id="resolution" placeholder="e.g. Send a plumber to fix the leaking pipe under the sink."></textarea>
+          <div class="hint">If left blank, the caretaker will assess and decide.</div>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="btn-primary" id="submitBtn">Submit request 🎉</button>
+          <div class="status-msg" id="statusMsg"></div>
+        </div>
+      </form>
+    </div>
+    <p class="footnote">Baraka Plaza Tenant Portal — Secure &amp; Private</p>
+  </div>
+</div>
+
+<a href="https://wa.me/" id="whatsappFab" class="whatsapp-fab" style="display:none;" target="_blank" rel="noopener">
+  💬<span class="wa-text">&nbsp;Chat Caretaker</span>
+</a>
+
+<iframe name="hidden_backend_iframe" id="hidden_backend_iframe" style="display:none;"></iframe>
+<form id="backendForm" method="POST" target="hidden_backend_iframe" style="display:none;">
+  <input type="hidden" name="payload" id="backendPayload">
+</form>
+
+<div id="confirmation">
+  <div class="wrap">
+    <div class="celebrate">
+      <span class="big-check">🎉</span>
+    </div>
+    <div class="hero-card fade-up" style="text-align:center;">
+      <div class="hero-eyebrow">Request Logged</div>
+      <h1>You're <em style="color:#FFE1EC;">all set!</em></h1>
+      <p class="sub">Check your email for confirmation — the caretaker's already been notified.</p>
+    </div>
+    <div class="ticket fade-up d1">
+      <div class="ticket-id-label">Work Order No.</div>
+      <div class="ticket-id" id="ticketId">—</div>
+      <div class="ticket-row"><span class="k">House / Unit</span><span class="v" id="tHouse"></span></div>
+      <div class="ticket-row"><span class="k">Name</span><span class="v" id="tName"></span></div>
+      <div class="ticket-row"><span class="k">Category</span><span class="v" id="tCategory"></span></div>
+      <div class="ticket-row"><span class="k">Urgency</span><span class="v" id="tUrgency"></span></div>
+      <div class="ticket-row"><span class="k">Submitted</span><span class="v" id="tDate"></span></div>
+    </div>
+    <p class="hint" style="margin-top:16px; text-align:center;">Keep this ticket number handy for reference.</p>
+    <button class="new-request-btn" id="newRequestBtn">Submit another request</button>
+  </div>
+</div>
+
+<script>
+  // ---- CONFIG ----
+  const ACCESS_CODE = "OAKWOOD26";
+  const CARETAKER_WHATSAPP = "254795665527"; // no + or spaces. Leave blank to hide the chat button.
+  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwtCOFGRRaP0QurQWnaCzhPTp90sOoleZTEzbF0uNYVCJzuG_jEOA3kv7D_jyXjv_unEg/exec";
+
+  if (CARETAKER_WHATSAPP) {
+    const fab = document.getElementById('whatsappFab');
+    fab.href = `https://wa.me/${CARETAKER_WHATSAPP}`;
+    fab.style.display = 'flex';
+  }
+
+  const gate = document.getElementById('gate');
+  const app = document.getElementById('app');
+  const confirmation = document.getElementById('confirmation');
+  const gateBtn = document.getElementById('gateBtn');
+  const gateError = document.getElementById('gateError');
+  const accessInput = document.getElementById('accessCode');
+
+  // Writes go through a hidden form (form posts aren't subject to CORS the
+  // way fetch() is). We can't read the response, so we treat "the iframe
+  // loaded" as success — the emails sent from the backend are the real
+  // confirmation that it worked.
+  function submitToBackend(payloadObj) {
+    return new Promise((resolve) => {
+      const iframe = document.getElementById('hidden_backend_iframe');
+      function onLoad() {
+        iframe.removeEventListener('load', onLoad);
+        resolve(true);
+      }
+      iframe.addEventListener('load', onLoad);
+      document.getElementById('backendPayload').value = JSON.stringify(payloadObj);
+      const form = document.getElementById('backendForm');
+      form.action = BACKEND_URL;
+      form.submit();
+    });
+  }
+
+  function tryEnter() {
+    const val = accessInput.value.trim();
+    if (val.toUpperCase() === ACCESS_CODE.toUpperCase()) {
+      gate.style.display = 'none';
+      app.style.display = 'block';
+    } else {
+      gateError.textContent = "That code isn't quite right. Check with your caretaker and try again.";
+      gateError.classList.remove('shake');
+      void gateError.offsetWidth;
+      gateError.classList.add('shake');
+    }
+  }
+  gateBtn.addEventListener('click', tryEnter);
+  accessInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryEnter(); });
+
+  let selectedCategory = null;
+  let selectedUrgency = null;
+
+  document.getElementById('categoryTags').addEventListener('click', (e) => {
+    const btn = e.target.closest('.tag');
+    if (!btn) return;
+    document.querySelectorAll('#categoryTags .tag').forEach(t => t.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedCategory = btn.dataset.value;
+    clearFieldError('field-category');
+  });
+
+  document.getElementById('urgencyTags').addEventListener('click', (e) => {
+    const btn = e.target.closest('.tag');
+    if (!btn) return;
+    document.querySelectorAll('#urgencyTags .tag').forEach(t => t.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedUrgency = btn.dataset.value;
+    clearFieldError('field-urgency');
+  });
+
+  function clearFieldError(id) {
+    const field = document.getElementById(id);
+    field.classList.remove('invalid');
+    const err = field.querySelector('.field-error');
+    if (err) err.classList.remove('show');
+  }
+
+  function markFieldError(id) {
+    const field = document.getElementById(id);
+    field.classList.add('invalid');
+    const err = field.querySelector('.field-error');
+    if (err) err.classList.add('show');
+  }
+
+  function isValidEmail(str) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
+  }
+
+  ['houseNumber', 'tenantName', 'tenantEmail', 'description'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      const fieldMap = { houseNumber: 'field-house', tenantName: 'field-name', tenantEmail: 'field-email', description: 'field-description' };
+      clearFieldError(fieldMap[id]);
+    });
+  });
+
+  const form = document.getElementById('complaintForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const statusMsg = document.getElementById('statusMsg');
+
+  function generateTicketId() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    return `WO-${y}${m}${d}-${rand}`;
+  }
+
+  function launchConfetti() {
+    const container = document.querySelector('.celebrate');
+    const colors = ['#FF4F81', '#FFC145', '#4FA8E8', '#2FBF8F'];
+    for (let i = 0; i < 18; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'confetti-dot';
+      const size = 6 + Math.random() * 6;
+      dot.style.width = size + 'px';
+      dot.style.height = size + 'px';
+      dot.style.background = colors[i % colors.length];
+      dot.style.left = (45 + (Math.random() * 10 - 5)) + '%';
+      dot.style.top = '10px';
+      dot.style.animationDelay = (Math.random() * 0.3) + 's';
+      dot.style.transform = `translateX(${(Math.random() * 160 - 80)}px)`;
+      container.appendChild(dot);
+      setTimeout(() => dot.remove(), 1800);
+    }
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const houseNumber = document.getElementById('houseNumber').value.trim();
+    const tenantName = document.getElementById('tenantName').value.trim();
+    const tenantEmail = document.getElementById('tenantEmail').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const resolution = document.getElementById('resolution').value.trim();
+
+    let valid = true;
+    if (!houseNumber) { markFieldError('field-house'); valid = false; }
+    if (!tenantName) { markFieldError('field-name'); valid = false; }
+    if (!tenantEmail || !isValidEmail(tenantEmail)) { markFieldError('field-email'); valid = false; }
+    if (!selectedCategory) { markFieldError('field-category'); valid = false; }
+    if (!selectedUrgency) { markFieldError('field-urgency'); valid = false; }
+    if (!description) { markFieldError('field-description'); valid = false; }
+
+    if (!valid) {
+      statusMsg.textContent = 'Please fill in the highlighted fields.';
+      return;
+    }
+
+    const ticketId = generateTicketId();
+    const now = new Date();
+    const record = {
+      ticketId,
+      houseNumber,
+      tenantName,
+      tenantEmail,
+      phone,
+      category: selectedCategory,
+      urgency: selectedUrgency,
+      description,
+      resolution,
+      submittedAt: now.toISOString()
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+    statusMsg.textContent = '';
+
+    try {
+      await submitToBackend(record);
+
+      document.getElementById('ticketId').textContent = ticketId;
+      document.getElementById('tHouse').textContent = houseNumber;
+      document.getElementById('tName').textContent = tenantName;
+      document.getElementById('tCategory').textContent = selectedCategory;
+      document.getElementById('tUrgency').textContent = selectedUrgency;
+      document.getElementById('tDate').textContent = now.toLocaleString(undefined, {
+        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+
+      app.style.display = 'none';
+      confirmation.style.display = 'block';
+      launchConfetti();
+    } catch (err) {
+      console.error('Failed to save complaint:', err);
+      statusMsg.textContent = "Couldn't save your request. Please try again in a moment.";
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit request 🎉';
+    }
+  });
+
+  document.getElementById('newRequestBtn').addEventListener('click', () => {
+    form.reset();
+    selectedCategory = null;
+    selectedUrgency = null;
+    document.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
+    document.querySelectorAll('.field').forEach(f => f.classList.remove('invalid'));
+    document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit request 🎉';
+    statusMsg.textContent = '';
+    confirmation.style.display = 'none';
+    app.style.display = 'block';
+  });
+</script>
+
+</body>
+</html>
