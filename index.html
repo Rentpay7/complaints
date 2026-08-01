@@ -231,10 +231,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
   }
   .btn-bio:hover { border-color: var(--sky); transform: translateY(-2px); }
   .btn-bio:active { transform: translateY(0); }
+  .bio-icon { width: 18px; height: 18px; flex-shrink: 0; }
 
   .bio-divider {
     display: flex;
@@ -249,16 +250,39 @@
   }
   .bio-divider::before, .bio-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-soft); }
 
-  .bio-setup-link {
-    background: transparent;
-    border: none;
-    color: var(--sky);
-    font-size: 13px;
-    font-weight: 700;
-    padding: 12px 0 0;
-    width: 100%;
+  .bio-checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 18px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--plum-ink);
+    text-align: left;
   }
-  .bio-setup-link:hover { text-decoration: underline; }
+  .bio-checkbox-row input[type="checkbox"] {
+    width: 19px;
+    height: 19px;
+    margin-top: 1px;
+    flex-shrink: 0;
+    accent-color: var(--mint);
+    cursor: pointer;
+  }
+
+  .bio-info {
+    margin-top: 12px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--border-soft);
+    background: var(--input-bg);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--plum-soft);
+    text-align: left;
+  }
+  .bio-info strong { color: var(--plum-ink); }
+  .bio-info + .btn-primary { margin-top: 20px; }
 
   .bio-status { font-size: 12px; font-weight: 600; margin-top: 10px; min-height: 14px; color: var(--mint); }
   .bio-status.error { color: var(--coral); }
@@ -466,14 +490,26 @@
     <h1>Got a house <em>issue?</em></h1>
     <p class="sub">Pop in your access code and let's get it sorted, fast.</p>
 
-    <button type="button" class="btn-bio" id="bioUnlockBtn" style="display:none;">👆 Unlock with Touch ID</button>
+    <button type="button" class="btn-bio" id="bioUnlockBtn" style="display:none;">
+      <svg class="bio-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/></svg>
+      Unlock with Touch ID
+    </button>
     <div class="bio-divider" id="bioDivider" style="display:none;"><span>or use your code</span></div>
 
     <label for="accessCode">Access code</label>
     <input type="text" id="accessCode" placeholder="Enter code" autocomplete="off">
-    <button class="btn-primary" id="gateBtn">Let's go 🚀</button>
+
+    <label class="bio-checkbox-row" id="bioCheckboxRow" style="display:none;">
+      <input type="checkbox" id="bioSetupCheckbox" checked>
+      <span>Set up Touch ID / fingerprint unlock on this device</span>
+    </label>
+
+    <div class="bio-info" id="bioInfo" style="display:none;">
+      <strong>How it works:</strong> once you unlock with the code below, this device will ask you to confirm with its Touch ID or fingerprint sensor to save it. Next time, just tap "Unlock with Touch ID" instead of typing the code — nothing is uploaded, the credential stays on this device only. Websites can't choose which biometric method a device uses, so on devices with only Face ID (no fingerprint sensor) the OS may use Face ID here instead; if you'd rather avoid that, leave this box unchecked and keep using the code.
+    </div>
+
+    <button class="btn-primary" id="gateBtn">Unlock</button>
     <div class="gate-error" id="gateError"></div>
-    <button type="button" class="bio-setup-link" id="bioSetupLink" style="display:none;">✨ Save Touch ID for next time</button>
     <div class="bio-status" id="bioStatus"></div>
   </div>
   <p class="footnote">No code? Ask your caretaker for one.</p>
@@ -677,7 +713,9 @@
   // typing after setup. Requires HTTPS (or localhost); hides itself otherwise.
   const bioUnlockBtn = document.getElementById('bioUnlockBtn');
   const bioDivider = document.getElementById('bioDivider');
-  const bioSetupLink = document.getElementById('bioSetupLink');
+  const bioCheckboxRow = document.getElementById('bioCheckboxRow');
+  const bioSetupCheckbox = document.getElementById('bioSetupCheckbox');
+  const bioInfo = document.getElementById('bioInfo');
   const bioStatus = document.getElementById('bioStatus');
 
   function setBioStatus(msg, isError = false) {
@@ -700,20 +738,17 @@
     }
   }
 
+  let bioEnabled = false;
   (async function initBiometricUI() {
-    const available = await biometricsAvailable();
-    if (!available) return; // no platform authenticator, or not a secure context
+    bioEnabled = await biometricsAvailable();
+    if (!bioEnabled) return; // no platform authenticator, or not a secure context
     bioUnlockBtn.style.display = 'flex';
     bioDivider.style.display = 'flex';
-    bioSetupLink.style.display = 'block';
+    bioCheckboxRow.style.display = 'flex';
+    bioInfo.style.display = 'block';
   })();
 
   async function registerBiometric() {
-    const enteredCode = accessInput.value.trim();
-    if (enteredCode.toUpperCase() !== ACCESS_CODE.toUpperCase()) {
-      setBioStatus('Enter your correct access code first, then tap this.', true);
-      return;
-    }
     try {
       const credential = await navigator.credentials.create({
         publicKey: {
@@ -737,10 +772,9 @@
       }
     } catch (err) {
       console.error('Biometric setup failed:', err);
-      setBioStatus("Couldn't set up biometric unlock on this device.", true);
+      setBioStatus("Couldn't set up Touch ID on this device — you can still use your code.", true);
     }
   }
-  bioSetupLink.addEventListener('click', registerBiometric);
 
   async function unlockWithBiometrics() {
     setBioStatus('');
@@ -764,17 +798,28 @@
   }
   bioUnlockBtn.addEventListener('click', unlockWithBiometrics);
 
-  function tryEnter() {
+  async function tryEnter() {
     const val = accessInput.value.trim();
-    if (val.toUpperCase() === ACCESS_CODE.toUpperCase()) {
-      gate.style.display = 'none';
-      app.style.display = 'block';
-    } else {
+    if (val.toUpperCase() !== ACCESS_CODE.toUpperCase()) {
       gateError.textContent = "That code isn't quite right. Check with your caretaker and try again.";
       gateError.classList.remove('shake');
       void gateError.offsetWidth;
       gateError.classList.add('shake');
+      return;
     }
+
+    // Code is correct — optionally set up Touch ID before entering.
+    if (bioEnabled && bioSetupCheckbox.checked) {
+      gateBtn.disabled = true;
+      const originalLabel = gateBtn.textContent;
+      gateBtn.textContent = 'Confirming...';
+      await registerBiometric();
+      gateBtn.disabled = false;
+      gateBtn.textContent = originalLabel;
+    }
+
+    gate.style.display = 'none';
+    app.style.display = 'block';
   }
   gateBtn.addEventListener('click', tryEnter);
   accessInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryEnter(); });
