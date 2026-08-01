@@ -718,6 +718,7 @@
   const bioInfo = document.getElementById('bioInfo');
   const bioStatus = document.getElementById('bioStatus');
   const BIO_SETUP_FLAG = 'barakaTouchIdSetUp';
+  const BIO_CRED_ID_KEY = 'barakaTouchIdCredId';
 
   function setBioStatus(msg, isError = false) {
     bioStatus.textContent = msg || '';
@@ -728,6 +729,33 @@
     const arr = new Uint8Array(len);
     crypto.getRandomValues(arr);
     return arr;
+  }
+
+  function bufferToBase64(buf) {
+    let binary = '';
+    new Uint8Array(buf).forEach(b => { binary += String.fromCharCode(b); });
+    return btoa(binary);
+  }
+  function base64ToBuffer(b64) {
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes.buffer;
+  }
+
+  function getSavedCredentialId() {
+    try {
+      return localStorage.getItem(BIO_CRED_ID_KEY);
+    } catch {
+      return null;
+    }
+  }
+  function saveCredentialId(rawId) {
+    try {
+      localStorage.setItem(BIO_CRED_ID_KEY, bufferToBase64(rawId));
+    } catch {
+      /* storage unavailable — unlock will fall back to the account picker */
+    }
   }
 
   // Remembering "already set up" locally is what lets us hide the checkbox
@@ -744,6 +772,7 @@
   function clearSavedBiometric() {
     try {
       localStorage.removeItem(BIO_SETUP_FLAG);
+      localStorage.removeItem(BIO_CRED_ID_KEY);
     } catch {
       /* nothing to clean up if storage isn't available */
     }
@@ -803,6 +832,7 @@
       });
       if (credential) {
         markBiometricSetUp();
+        saveCredentialId(credential.rawId);
         setBioStatus('Saved — you can unlock with Touch ID next time. ✅');
       }
     } catch (err) {
@@ -813,11 +843,18 @@
 
   async function unlockWithBiometrics() {
     setBioStatus('');
+    const savedId = getSavedCredentialId();
     try {
       const assertion = await navigator.credentials.get({
         publicKey: {
           challenge: randomBytes(32),
           rpId: window.location.hostname,
+          // Pointing at the exact credential (when we have it saved) skips
+          // the browser's "choose a passkey" picker and goes straight to
+          // the fingerprint/Touch ID sensor.
+          allowCredentials: savedId
+            ? [{ type: 'public-key', id: base64ToBuffer(savedId) }]
+            : [],
           userVerification: 'required',
           timeout: 60000
         }
