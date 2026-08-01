@@ -12,16 +12,46 @@
     --hot-pink-deep: #E8306A;
     --pink-light: #FFE1EC;
     --pink-pale: #FFF3F7;
-    --cream: #FFFBF6;
-    --plum-ink: #2B1830;
-    --plum-soft: #6E5A72;
     --sunshine: #FFC145;
     --mint: #2FBF8F;
     --coral: #FF6B4A;
     --sky: #4FA8E8;
+
+    /* theme-aware surfaces */
+    --cream: #FFFBF6;
+    --plum-ink: #2B1830;
+    --plum-soft: #6E5A72;
+    --card-bg: #FFFFFF;
+    --input-bg: #FAF8F5;
+    --input-bg-focus: #FFFFFF;
+    --border-soft: #ECE7E2;
+    --shadow-soft: rgba(43,24,48,0.06);
+    --shadow-card: rgba(43,24,48,0.08);
+    --error-bg: #FFF1EE;
+    --blob-opacity: 0.22;
+    --blob-opacity-mint: 0.18;
+    --scheme: light;
+  }
+
+  [data-theme="dark"] {
+    --cream: #16111C;
+    --plum-ink: #F3EAF6;
+    --plum-soft: #B7A6C0;
+    --card-bg: #221A2A;
+    --input-bg: #2A2032;
+    --input-bg-focus: #302538;
+    --border-soft: #3B2E45;
+    --shadow-soft: rgba(0,0,0,0.35);
+    --shadow-card: rgba(0,0,0,0.4);
+    --error-bg: #3A2027;
+    --blob-opacity: 0.28;
+    --blob-opacity-mint: 0.22;
+    --scheme: dark;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { color-scheme: var(--scheme); }
 
   body {
     font-family: 'Inter', sans-serif;
@@ -29,6 +59,7 @@
     color: var(--plum-ink);
     min-height: 100vh;
     overflow-x: hidden;
+    transition: background 0.25s ease, color 0.25s ease;
   }
 
   .blob {
@@ -38,9 +69,9 @@
     z-index: 0;
     animation: float 12s ease-in-out infinite;
   }
-  .blob1 { width: 300px; height: 300px; background: var(--sky); top: -120px; left: -100px; animation-delay: 0s; opacity: 0.22; }
-  .blob2 { width: 280px; height: 280px; background: var(--sunshine); bottom: -100px; right: -80px; animation-delay: -4s; opacity: 0.22; }
-  .blob3 { width: 220px; height: 220px; background: var(--mint); top: 40%; right: -60px; animation-delay: -8s; opacity: 0.18; }
+  .blob1 { width: 300px; height: 300px; background: var(--sky); top: -120px; left: -100px; animation-delay: 0s; opacity: var(--blob-opacity); }
+  .blob2 { width: 280px; height: 280px; background: var(--sunshine); bottom: -100px; right: -80px; animation-delay: -4s; opacity: var(--blob-opacity); }
+  .blob3 { width: 220px; height: 220px; background: var(--mint); top: 40%; right: -60px; animation-delay: -8s; opacity: var(--blob-opacity-mint); }
 
   @keyframes float {
     0%, 100% { transform: translate(0, 0) scale(1); }
@@ -88,11 +119,12 @@
   .gate-card {
     width: 100%;
     max-width: 400px;
-    background: white;
+    background: var(--card-bg);
     border-radius: 28px;
     padding: 40px 32px;
-    box-shadow: 0 20px 60px rgba(232, 48, 106, 0.18), 0 4px 12px rgba(43,24,48,0.06);
+    box-shadow: 0 20px 60px rgba(232, 48, 106, 0.18), 0 4px 12px var(--shadow-soft);
     text-align: center;
+    transition: background 0.25s ease;
   }
 
   .gate-emoji {
@@ -135,19 +167,19 @@
 
   input[type="text"], input[type="email"], input[type="tel"], textarea {
     width: 100%;
-    background: #FAF8F5;
-    border: 2px solid #ECE7E2;
+    background: var(--input-bg);
+    border: 2px solid var(--border-soft);
     border-radius: 14px;
     color: var(--plum-ink);
     padding: 13px 16px;
     font-family: 'Inter', sans-serif;
     font-size: 15px;
     outline: none;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
   }
   input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus, textarea:focus {
     border-color: var(--sky);
-    background: white;
+    background: var(--input-bg-focus);
   }
 
   #accessCode { text-align: center; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 16px; }
@@ -188,6 +220,28 @@
   }
 
   .footnote { font-size: 13px; color: var(--plum-soft); margin-top: 22px; text-align: center; }
+
+  /* ---------- THEME TOGGLE ---------- */
+  .theme-toggle {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 2px solid var(--border-soft);
+    box-shadow: 0 8px 20px var(--shadow-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 60;
+    transition: transform 0.15s, background 0.25s ease, border-color 0.25s ease;
+  }
+  .theme-toggle:hover { transform: translateY(-2px) scale(1.05); }
+  .theme-toggle:active { transform: translateY(0) scale(0.95); }
 
   /* ---------- WHATSAPP FAB ---------- */
   .whatsapp-fab {
@@ -243,18 +297,18 @@
     margin-bottom: 28px;
   }
   .stat-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 18px;
     padding: 16px 10px;
     text-align: center;
-    box-shadow: 0 8px 20px rgba(43,24,48,0.06);
-    transition: transform 0.15s;
+    box-shadow: 0 8px 20px var(--shadow-soft);
+    transition: transform 0.15s, background 0.25s ease;
   }
   .stat-card:hover { transform: translateY(-3px); }
   .stat-number { font-family: 'Baloo 2', sans-serif; font-size: 22px; font-weight: 800; }
   .stat-label { font-size: 11px; color: var(--plum-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
 
-  .form-card { background: white; border-radius: 28px; padding: 32px 28px; box-shadow: 0 16px 40px rgba(43,24,48,0.08); }
+  .form-card { background: var(--card-bg); border-radius: 28px; padding: 32px 28px; box-shadow: 0 16px 40px var(--shadow-card); transition: background 0.25s ease; }
 
   .field { margin-bottom: 22px; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -285,11 +339,11 @@
     font-size: 13px;
     font-weight: 600;
     padding: 10px 16px;
-    border: 2px solid #ECE7E2;
+    border: 2px solid var(--border-soft);
     border-radius: 999px;
     color: var(--plum-soft);
     cursor: pointer;
-    background: #FAF8F5;
+    background: var(--input-bg);
     transition: all 0.15s;
   }
   .tag:hover { border-color: var(--sky); color: var(--plum-ink); transform: translateY(-1px); }
@@ -313,7 +367,7 @@
 
   .field-error { color: var(--coral); font-size: 12px; font-weight: 600; margin-top: 6px; display: none; }
   .field-error.show { display: block; }
-  .field.invalid input, .field.invalid textarea { border-color: var(--coral) !important; background: #FFF1EE; }
+  .field.invalid input, .field.invalid textarea { border-color: var(--coral) !important; background: var(--error-bg); }
 
   /* ---------- CONFIRMATION TICKET ---------- */
   #confirmation { display: none; }
@@ -333,22 +387,23 @@
   }
 
   .ticket {
-    background: white;
+    background: var(--card-bg);
     border-radius: 24px;
     padding: 28px;
     position: relative;
-    box-shadow: 0 16px 40px rgba(43,24,48,0.08);
-    border: 2px dashed #ECE7E2;
+    box-shadow: 0 16px 40px var(--shadow-card);
+    border: 2px dashed var(--border-soft);
+    transition: background 0.25s ease;
   }
 
   .ticket-id-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--plum-soft); }
   .ticket-id { font-family: 'Baloo 2', sans-serif; font-size: 30px; font-weight: 800; color: var(--hot-pink-deep); margin: 6px 0 4px; }
 
-  .ticket-row { display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid #ECE7E2; font-size: 14px; }
+  .ticket-row { display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--border-soft); font-size: 14px; }
   .ticket-row .k { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--plum-soft); }
   .ticket-row .v { text-align: right; max-width: 60%; font-weight: 600; }
 
-  .new-request-btn { background: white; border: 2px solid #ECE7E2; color: var(--plum-ink); width: 100%; margin-top: 20px; }
+  .new-request-btn { background: var(--card-bg); border: 2px solid var(--border-soft); color: var(--plum-ink); width: 100%; margin-top: 20px; }
   .new-request-btn:hover { border-color: var(--sky); transform: translateY(-2px); }
 
   .status-msg { font-weight: 600; font-size: 13px; text-align: center; margin-top: 14px; color: var(--coral); }
@@ -359,6 +414,8 @@
 <div class="blob blob1"></div>
 <div class="blob blob2"></div>
 <div class="blob blob3"></div>
+
+<button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">🌙</button>
 
 <div id="gate">
   <div class="gate-card fade-up">
@@ -504,6 +561,29 @@
 </div>
 
 <script>
+  // ---- THEME TOGGLE ----
+  // Defaults to the visitor's system preference, then can be flipped
+  // manually for the rest of the session via the button top-right.
+  const themeToggle = document.getElementById('themeToggle');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  let currentTheme = prefersDark ? 'dark' : 'light';
+
+  function applyTheme(theme) {
+    currentTheme = theme;
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      themeToggle.textContent = '☀️';
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      themeToggle.textContent = '🌙';
+    }
+  }
+  applyTheme(currentTheme);
+
+  themeToggle.addEventListener('click', () => {
+    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+  });
+
   // ---- CONFIG ----
   const ACCESS_CODE = "OAKWOOD26";
   const CARETAKER_WHATSAPP = "254795665527"; // no + or spaces. Leave blank to hide the chat button.
