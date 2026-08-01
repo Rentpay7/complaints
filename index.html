@@ -717,6 +717,7 @@
   const bioSetupCheckbox = document.getElementById('bioSetupCheckbox');
   const bioInfo = document.getElementById('bioInfo');
   const bioStatus = document.getElementById('bioStatus');
+  const BIO_SETUP_FLAG = 'barakaTouchIdSetUp';
 
   function setBioStatus(msg, isError = false) {
     bioStatus.textContent = msg || '';
@@ -727,6 +728,32 @@
     const arr = new Uint8Array(len);
     crypto.getRandomValues(arr);
     return arr;
+  }
+
+  // Remembering "already set up" locally is what lets us hide the checkbox
+  // and instructions on later visits/refreshes. Wrapped in try/catch since
+  // some browsers block storage in certain contexts — if that happens we
+  // just fall back to always showing the setup step.
+  function hasSavedBiometric() {
+    try {
+      return localStorage.getItem(BIO_SETUP_FLAG) === '1';
+    } catch {
+      return false;
+    }
+  }
+  function clearSavedBiometric() {
+    try {
+      localStorage.removeItem(BIO_SETUP_FLAG);
+    } catch {
+      /* nothing to clean up if storage isn't available */
+    }
+  }
+  function markBiometricSetUp() {
+    try {
+      localStorage.setItem(BIO_SETUP_FLAG, '1');
+    } catch {
+      /* storage unavailable — instructions will just reappear next visit */
+    }
   }
 
   async function biometricsAvailable() {
@@ -742,10 +769,17 @@
   (async function initBiometricUI() {
     bioEnabled = await biometricsAvailable();
     if (!bioEnabled) return; // no platform authenticator, or not a secure context
-    bioUnlockBtn.style.display = 'flex';
-    bioDivider.style.display = 'flex';
-    bioCheckboxRow.style.display = 'flex';
-    bioInfo.style.display = 'block';
+
+    if (hasSavedBiometric()) {
+      // Already set up on this device — just offer the quick unlock button,
+      // skip the checkbox and "how it works" explainer.
+      bioUnlockBtn.style.display = 'flex';
+      bioDivider.style.display = 'flex';
+    } else {
+      // First time on this device — offer to set it up alongside the code.
+      bioCheckboxRow.style.display = 'flex';
+      bioInfo.style.display = 'block';
+    }
   })();
 
   async function registerBiometric() {
@@ -768,6 +802,7 @@
         }
       });
       if (credential) {
+        markBiometricSetUp();
         setBioStatus('Saved — you can unlock with Touch ID next time. ✅');
       }
     } catch (err) {
@@ -793,7 +828,14 @@
       }
     } catch (err) {
       console.error('Biometric unlock failed:', err);
-      setBioStatus("No saved Touch ID found on this device yet — enter your code below to set it up.", true);
+      // The saved flag was wrong (passkey cleared, new profile, etc.) —
+      // reveal the setup step again so they aren't stuck.
+      clearSavedBiometric();
+      bioUnlockBtn.style.display = 'none';
+      bioDivider.style.display = 'none';
+      bioCheckboxRow.style.display = 'flex';
+      bioInfo.style.display = 'block';
+      setBioStatus("Couldn't find a saved Touch ID for this device anymore — enter your code below to set it up again.", true);
     }
   }
   bioUnlockBtn.addEventListener('click', unlockWithBiometrics);
