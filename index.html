@@ -221,6 +221,48 @@
 
   .footnote { font-size: 13px; color: var(--plum-soft); margin-top: 22px; text-align: center; }
 
+  /* ---------- BIOMETRIC UNLOCK ---------- */
+  .btn-bio {
+    background: var(--card-bg);
+    border: 2px solid var(--border-soft);
+    color: var(--plum-ink);
+    width: 100%;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-bio:hover { border-color: var(--sky); transform: translateY(-2px); }
+  .btn-bio:active { transform: translateY(0); }
+
+  .bio-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    color: var(--plum-soft);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .bio-divider::before, .bio-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-soft); }
+
+  .bio-setup-link {
+    background: transparent;
+    border: none;
+    color: var(--sky);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 12px 0 0;
+    width: 100%;
+  }
+  .bio-setup-link:hover { text-decoration: underline; }
+
+  .bio-status { font-size: 12px; font-weight: 600; margin-top: 10px; min-height: 14px; color: var(--mint); }
+  .bio-status.error { color: var(--coral); }
+
   /* ---------- THEME TOGGLE ---------- */
   .theme-toggle {
     position: fixed;
@@ -423,10 +465,16 @@
     <div class="eyebrow">Baraka Plaza · Residents Only</div>
     <h1>Got a house <em>issue?</em></h1>
     <p class="sub">Pop in your access code and let's get it sorted, fast.</p>
+
+    <button type="button" class="btn-bio" id="bioUnlockBtn" style="display:none;">👆 Unlock with Face ID / Touch ID</button>
+    <div class="bio-divider" id="bioDivider" style="display:none;"><span>or use your code</span></div>
+
     <label for="accessCode">Access code</label>
     <input type="text" id="accessCode" placeholder="Enter code" autocomplete="off">
     <button class="btn-primary" id="gateBtn">Let's go 🚀</button>
     <div class="gate-error" id="gateError"></div>
+    <button type="button" class="bio-setup-link" id="bioSetupLink" style="display:none;">✨ Save Face ID / Touch ID for next time</button>
+    <div class="bio-status" id="bioStatus"></div>
   </div>
   <p class="footnote">No code? Ask your caretaker for one.</p>
 </div>
@@ -620,6 +668,101 @@
       form.submit();
     });
   }
+
+  // ---- BIOMETRIC UNLOCK ----
+  // Device-bound convenience layer on top of the shared access code, using
+  // WebAuthn platform authenticators (Face ID / Touch ID / Windows Hello /
+  // Android fingerprint). This is NOT per-tenant identity — whoever unlocks
+  // the device can get in, same trust level as the code itself, just less
+  // typing after setup. Requires HTTPS (or localhost); hides itself otherwise.
+  const bioUnlockBtn = document.getElementById('bioUnlockBtn');
+  const bioDivider = document.getElementById('bioDivider');
+  const bioSetupLink = document.getElementById('bioSetupLink');
+  const bioStatus = document.getElementById('bioStatus');
+
+  function setBioStatus(msg, isError = false) {
+    bioStatus.textContent = msg || '';
+    bioStatus.classList.toggle('error', isError);
+  }
+
+  function randomBytes(len) {
+    const arr = new Uint8Array(len);
+    crypto.getRandomValues(arr);
+    return arr;
+  }
+
+  async function biometricsAvailable() {
+    try {
+      if (!window.PublicKeyCredential || !PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) return false;
+      return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    } catch {
+      return false;
+    }
+  }
+
+  (async function initBiometricUI() {
+    const available = await biometricsAvailable();
+    if (!available) return; // no platform authenticator, or not a secure context
+    bioUnlockBtn.style.display = 'flex';
+    bioDivider.style.display = 'flex';
+    bioSetupLink.style.display = 'block';
+  })();
+
+  async function registerBiometric() {
+    const enteredCode = accessInput.value.trim();
+    if (enteredCode.toUpperCase() !== ACCESS_CODE.toUpperCase()) {
+      setBioStatus('Enter your correct access code first, then tap this.', true);
+      return;
+    }
+    try {
+      const credential = await navigator.credentials.create({
+        publicKey: {
+          challenge: randomBytes(32),
+          rp: { name: 'Baraka Plaza', id: window.location.hostname },
+          user: { id: randomBytes(16), name: 'resident', displayName: 'Baraka Plaza Resident' },
+          pubKeyCredParams: [
+            { type: 'public-key', alg: -7 },
+            { type: 'public-key', alg: -257 }
+          ],
+          authenticatorSelection: {
+            authenticatorAttachment: 'platform',
+            residentKey: 'required',
+            userVerification: 'required'
+          },
+          timeout: 60000
+        }
+      });
+      if (credential) {
+        setBioStatus('Saved — you can unlock with Face ID / Touch ID next time. ✅');
+      }
+    } catch (err) {
+      console.error('Biometric setup failed:', err);
+      setBioStatus("Couldn't set up biometric unlock on this device.", true);
+    }
+  }
+  bioSetupLink.addEventListener('click', registerBiometric);
+
+  async function unlockWithBiometrics() {
+    setBioStatus('');
+    try {
+      const assertion = await navigator.credentials.get({
+        publicKey: {
+          challenge: randomBytes(32),
+          rpId: window.location.hostname,
+          userVerification: 'required',
+          timeout: 60000
+        }
+      });
+      if (assertion) {
+        gate.style.display = 'none';
+        app.style.display = 'block';
+      }
+    } catch (err) {
+      console.error('Biometric unlock failed:', err);
+      setBioStatus("No saved Face ID / Touch ID found on this device yet — enter your code below to set it up.", true);
+    }
+  }
+  bioUnlockBtn.addEventListener('click', unlockWithBiometrics);
 
   function tryEnter() {
     const val = accessInput.value.trim();
