@@ -833,7 +833,19 @@
       if (credential) {
         markBiometricSetUp();
         saveCredentialId(credential.rawId);
-        setBioStatus('Saved — you can unlock with Touch ID next time. ✅');
+
+        // Read back what we just wrote — some browsers (private/incognito
+        // tabs, storage-restricted contexts) silently drop the write. If it
+        // didn't stick, say so honestly instead of promising persistence
+        // that won't happen.
+        const confirmedSaved = hasSavedBiometric() && getSavedCredentialId() === bufferToBase64(credential.rawId);
+        console.log('Baraka Touch ID: credential created, storage confirmed =', confirmedSaved);
+
+        if (confirmedSaved) {
+          setBioStatus('Saved — you can unlock with Touch ID next time. ✅');
+        } else {
+          setBioStatus("Touch ID worked, but this browser won't remember it after you leave (private/incognito mode, or storage is blocked) — you'll need to set it up again next visit.", true);
+        }
       }
     } catch (err) {
       console.error('Biometric setup failed:', err);
@@ -844,6 +856,7 @@
   async function unlockWithBiometrics() {
     setBioStatus('');
     const savedId = getSavedCredentialId();
+    console.log('Baraka Touch ID: unlocking, using stored credential id =', !!savedId);
     try {
       const assertion = await navigator.credentials.get({
         publicKey: {
@@ -860,11 +873,12 @@
         }
       });
       if (assertion) {
+        console.log('Baraka Touch ID: unlock succeeded');
         gate.style.display = 'none';
         app.style.display = 'block';
       }
     } catch (err) {
-      console.error('Biometric unlock failed:', err);
+      console.error('Baraka Touch ID: unlock failed —', err.name, err.message);
       // The saved flag was wrong (passkey cleared, new profile, etc.) —
       // reveal the setup step again so they aren't stuck.
       clearSavedBiometric();
