@@ -356,6 +356,83 @@
   .hero-card h1 { font-size: 28px; color: white; margin-bottom: 8px; }
   .hero-card .sub { color: rgba(255,255,255,0.9); margin-bottom: 0; }
 
+  /* ---------- QUICK LINKS (payment messages / vacate notice) ---------- */
+  .quick-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .quick-link-card {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card-bg);
+    border: 2px solid var(--border-soft);
+    border-radius: 18px;
+    padding: 16px;
+    text-decoration: none;
+    color: var(--plum-ink);
+    box-shadow: 0 8px 20px var(--shadow-soft);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .quick-link-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.65s ease;
+    pointer-events: none;
+  }
+  [data-theme="dark"] .quick-link-card::before {
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.14), transparent);
+  }
+  .quick-link-card:hover::before { left: 130%; }
+  .quick-link-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--sky);
+    box-shadow: 0 14px 28px var(--shadow-card);
+  }
+  .quick-link-card:active { transform: translateY(-1px) scale(0.99); }
+
+  .ql-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    flex-shrink: 0;
+    background: rgba(255, 79, 129, 0.12);
+    transition: transform 0.25s ease;
+  }
+  .quick-link-card:hover .ql-icon { transform: scale(1.08) rotate(-4deg); }
+
+  .ql-text { display: flex; flex-direction: column; text-align: left; min-width: 0; }
+  .ql-title { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 14.5px; }
+  .ql-sub { font-size: 11.5px; color: var(--plum-soft); margin-top: 2px; line-height: 1.3; }
+
+  .ql-arrow {
+    margin-left: auto;
+    font-size: 18px;
+    color: var(--plum-soft);
+    flex-shrink: 0;
+    transition: transform 0.25s ease, color 0.25s ease;
+  }
+  .quick-link-card:hover .ql-arrow { transform: translateX(4px); color: var(--hot-pink-deep); }
+
+  @media (max-width: 480px) {
+    .quick-links { grid-template-columns: 1fr; }
+  }
+
   .stat-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -521,6 +598,25 @@
       <div class="hero-eyebrow">Baraka Plaza · Work Order Intake</div>
       <h1>Tell us what's <em style="color: #FFE1EC;">up</em> at your place</h1>
       <p class="sub">Takes under a minute. You'll get an email confirming we've got it, and the caretaker is notified right away.</p>
+    </div>
+
+    <div class="quick-links fade-up">
+      <a href="https://tenant-portal-pink.vercel.app/" target="_blank" rel="noopener" class="quick-link-card">
+        <span class="ql-icon">💳</span>
+        <span class="ql-text">
+          <span class="ql-title">Payment Messages</span>
+          <span class="ql-sub">Submit a payment confirmation</span>
+        </span>
+        <span class="ql-arrow">→</span>
+      </a>
+      <a href="https://vacate-notice.vercel.app/" target="_blank" rel="noopener" class="quick-link-card">
+        <span class="ql-icon">🚪</span>
+        <span class="ql-text">
+          <span class="ql-title">Vacate Notice</span>
+          <span class="ql-sub">Let us know you're moving out</span>
+        </span>
+        <span class="ql-arrow">→</span>
+      </a>
     </div>
 
     <div class="stat-row fade-up d1">
