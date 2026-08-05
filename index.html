@@ -182,7 +182,7 @@
     background: var(--input-bg-focus);
   }
 
-  #accessCode { text-align: center; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 16px; }
+  #accessCode { text-align: center; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 16px; text-transform: uppercase; }
 
   button {
     font-family: 'Baloo 2', sans-serif;
@@ -574,7 +574,15 @@
     <div class="bio-divider" id="bioDivider" style="display:none;"><span>or use your code</span></div>
 
     <label for="accessCode">Access code</label>
-    <input type="text" id="accessCode" placeholder="Enter code" autocomplete="off">
+    <input
+      type="text"
+      id="accessCode"
+      placeholder="Enter code"
+      autocomplete="off"
+      autocapitalize="characters"
+      spellcheck="false"
+      inputmode="text"
+    >
 
     <label class="bio-checkbox-row" id="bioCheckboxRow" style="display:none;">
       <input type="checkbox" id="bioSetupCheckbox" checked>
@@ -781,6 +789,15 @@
   const gateBtn = document.getElementById('gateBtn');
   const gateError = document.getElementById('gateError');
   const accessInput = document.getElementById('accessCode');
+
+  // Force whatever's typed/pasted to actual uppercase characters — not just
+  // a visual CSS effect — so it works the same regardless of the phone's
+  // keyboard capitalization state.
+  accessInput.addEventListener('input', () => {
+    const pos = accessInput.selectionStart;
+    accessInput.value = accessInput.value.toUpperCase();
+    accessInput.setSelectionRange(pos, pos);
+  });
 
   // Writes go through a hidden form (form posts aren't subject to CORS the
   // way fetch() is). We can't read the response, so we treat "the iframe
